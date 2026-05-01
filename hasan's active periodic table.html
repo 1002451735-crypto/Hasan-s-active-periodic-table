@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Active Periodic Table</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#050814;
+    color:white;
+    text-align:center;
+}
+
+/* Titles */
+h1{
+    margin-top:15px;
+    font-size:26px;
+    font-weight:bold;
+}
+
+h2{
+    margin:5px;
+    font-size:18px;
+    color:#aaa;
+}
+
+/* Search */
+input{
+    padding:10px;
+    width:280px;
+    border-radius:20px;
+    border:none;
+    margin-bottom:10px;
+}
+
+/* Grid */
+#grid{
+    display:grid;
+    grid-template-columns:repeat(18,55px);
+    justify-content:center;
+    gap:4px;
+}
+
+/* Elements */
+.el{
+    height:45px;
+    font-size:14px;
+    font-weight:bold;
+    border-radius:6px;
+    cursor:pointer;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    transition:0.2s;
+}
+
+.el:hover{
+    transform:scale(1.2);
+}
+
+/* Colors */
+.metal{background:#2563eb}
+.nonmetal{background:#22c55e}
+.metalloid{background:#f59e0b}
+.noble{background:#a855f7}
+.transition{background:#0ea5e9}
+.lanth{background:#f97316}
+.act{background:#ef4444}
+.empty{background:transparent}
+
+/* f-block */
+#fblock{
+    display:grid;
+    grid-template-columns:repeat(15,55px);
+    justify-content:center;
+    gap:4px;
+    margin-top:20px;
+}
+
+/* Popup */
+.popup{
+    display:none;
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    background:white;
+    color:black;
+    padding:20px;
+    width:320px;
+    border-radius:10px;
+}
+
+button{
+    margin-top:10px;
+    padding:6px 12px;
+}
+
+/* Footer */
+footer{
+    margin-top:30px;
+    padding:15px;
+    font-size:14px;
+    color:#bbb;
+}
+</style>
+</head>
+
+<body>
+
+<h1><b>De La Salle High School</b></h1>
+<h2>Active Periodic Table</h2>
+
+<input id="search" placeholder="Search element..." onkeyup="filter()">
+
+<div id="grid"></div>
+
+<h3>Lanthanides / Actinides</h3>
+<div id="fblock"></div>
+
+<div class="popup" id="pop">
+<h2 id="name"></h2>
+<p id="sym"></p>
+<p id="num"></p>
+<p id="type"></p>
+<button onclick="closeP()">Close</button>
+</div>
+
+<script>
+
+/* Elements */
+const E={
+1:["Hydrogen","nonmetal"],2:["Helium","noble"],
+3:["Lithium","metal"],4:["Beryllium","metal"],
+5:["Boron","metalloid"],6:["Carbon","nonmetal"],
+7:["Nitrogen","nonmetal"],8:["Oxygen","nonmetal"],
+9:["Fluorine","nonmetal"],10:["Neon","noble"],
+11:["Sodium","metal"],12:["Magnesium","metal"],
+13:["Aluminium","metal"],14:["Silicon","metalloid"],
+15:["Phosphorus","nonmetal"],16:["Sulfur","nonmetal"],
+17:["Chlorine","nonmetal"],18:["Argon","noble"],
+19:["Potassium","metal"],20:["Calcium","metal"],
+21:["Scandium","transition"],22:["Titanium","transition"],
+23:["Vanadium","transition"],24:["Chromium","transition"],
+25:["Manganese","transition"],26:["Iron","transition"],
+27:["Cobalt","transition"],28:["Nickel","transition"],
+29:["Copper","transition"],30:["Zinc","transition"],
+31:["Gallium","metal"],32:["Germanium","metalloid"],
+33:["Arsenic","metalloid"],34:["Selenium","nonmetal"],
+35:["Bromine","nonmetal"],36:["Krypton","noble"],
+37:["Rubidium","metal"],38:["Strontium","metal"],
+39:["Yttrium","transition"],40:["Zirconium","transition"],
+41:["Niobium","transition"],42:["Molybdenum","transition"],
+43:["Technetium","transition"],44:["Ruthenium","transition"],
+45:["Rhodium","transition"],46:["Palladium","transition"],
+47:["Silver","transition"],48:["Cadmium","transition"],
+49:["Indium","metal"],50:["Tin","metal"],
+51:["Antimony","metalloid"],52:["Tellurium","metalloid"],
+53:["Iodine","nonmetal"],54:["Xenon","noble"],
+55:["Cesium","metal"],56:["Barium","metal"],
+57:["Lanthanum","lanth"],58:["Cerium","lanth"],
+59:["Praseodymium","lanth"],60:["Neodymium","lanth"],
+61:["Promethium","lanth"],62:["Samarium","lanth"],
+63:["Europium","lanth"],64:["Gadolinium","lanth"],
+65:["Terbium","lanth"],66:["Dysprosium","lanth"],
+67:["Holmium","lanth"],68:["Erbium","lanth"],
+69:["Thulium","lanth"],70:["Ytterbium","lanth"],
+71:["Lutetium","lanth"],
+72:["Hafnium","transition"],73:["Tantalum","transition"],
+74:["Tungsten","transition"],75:["Rhenium","transition"],
+76:["Osmium","transition"],77:["Iridium","transition"],
+78:["Platinum","transition"],79:["Gold","transition"],
+80:["Mercury","transition"],
+81:["Thallium","metal"],82:["Lead","metal"],
+83:["Bismuth","metal"],84:["Polonium","metalloid"],
+85:["Astatine","nonmetal"],86:["Radon","noble"],
+87:["Francium","metal"],88:["Radium","metal"],
+89:["Actinium","act"],90:["Thorium","act"],
+91:["Protactinium","act"],92:["Uranium","act"],
+93:["Neptunium","act"],94:["Plutonium","act"],
+95:["Americium","act"],96:["Curium","act"],
+97:["Berkelium","act"],98:["Californium","act"],
+99:["Einsteinium","act"],100:["Fermium","act"],
+101:["Mendelevium","act"],102:["Nobelium","act"],
+103:["Lawrencium","act"],
+104:["Rutherfordium","transition"],105:["Dubnium","transition"],
+106:["Seaborgium","transition"],107:["Bohrium","transition"],
+108:["Hassium","transition"],109:["Meitnerium","transition"],
+110:["Darmstadtium","transition"],111:["Roentgenium","transition"],
+112:["Copernicium","transition"],
+113:["Nihonium","metal"],114:["Flerovium","metal"],
+115:["Moscovium","metal"],116:["Livermorium","metal"],
+117:["Tennessine","nonmetal"],118:["Oganesson","noble"]
+};
+
+/* Layout */
+const layout=[
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2],
+[3,4,0,0,0,0,0,0,0,0,0,0,5,6,7,8,9,10],
+[11,12,0,0,0,0,0,0,0,0,0,0,13,14,15,16,17,18],
+[19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36],
+[37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54],
+[55,56,0,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86],
+[87,88,0,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118]
+];
+
+let grid=document.getElementById("grid");
+
+for(let r=0;r<layout.length;r++){
+for(let c=0;c<18;c++){
+
+let z=layout[r][c];
+let d=document.createElement("div");
+
+if(z==0){
+d.className="el empty";
+}else{
+let e=E[z];
+d.className="el "+e[1];
+d.innerText=getSymbol(z);
+d.onclick=()=>{show(z);speak(z);}
+}
+grid.appendChild(d);
+}
+}
+
+/* f-block */
+let f=document.getElementById("fblock");
+
+for(let i=57;i<=71;i++){
+let d=document.createElement("div");
+d.className="el lanth";
+d.innerText=getSymbol(i);
+d.onclick=()=>{show(i);speak(i)};
+f.appendChild(d);
+}
+
+for(let i=89;i<=103;i++){
+let d=document.createElement("div");
+d.className="el act";
+d.innerText=getSymbol(i);
+d.onclick=()=>{show(i);speak(i)};
+f.appendChild(d);
+}
+
+/* Info */
+function show(z){
+let e=E[z];
+
+document.getElementById("name").innerText=e[0];
+document.getElementById("sym").innerText="Symbol: "+getSymbol(z);
+document.getElementById("num").innerText="Atomic Number: "+z;
+document.getElementById("type").innerText="Type: "+e[1];
+
+document.getElementById("pop").style.display="block";
+}
+
+function closeP(){
+document.getElementById("pop").style.display="none";
+}
+
+/* 🔊 English voice */
+function speak(z){
+window.speechSynthesis.cancel();
+
+let e=E[z];
+
+let msg=new SpeechSynthesisUtterance();
+msg.text="Element "+e[0]+", symbol "+getSymbol(z)+", atomic number "+z;
+msg.lang="en-US";
+msg.rate=0.9;
+
+speechSynthesis.speak(msg);
+}
+
+/* Symbols */
+function getSymbol(z){
+const s={
+1:"H",2:"He",3:"Li",4:"Be",5:"B",6:"C",7:"N",8:"O",9:"F",10:"Ne",
+11:"Na",12:"Mg",13:"Al",14:"Si",15:"P",16:"S",17:"Cl",18:"Ar",
+19:"K",20:"Ca",21:"Sc",22:"Ti",23:"V",24:"Cr",25:"Mn",26:"Fe",
+27:"Co",28:"Ni",29:"Cu",30:"Zn",31:"Ga",32:"Ge",33:"As",34:"Se",
+35:"Br",36:"Kr",37:"Rb",38:"Sr",39:"Y",40:"Zr",41:"Nb",42:"Mo",
+43:"Tc",44:"Ru",45:"Rh",46:"Pd",47:"Ag",48:"Cd",49:"In",50:"Sn",
+51:"Sb",52:"Te",53:"I",54:"Xe",55:"Cs",56:"Ba",57:"La",58:"Ce",
+59:"Pr",60:"Nd",61:"Pm",62:"Sm",63:"Eu",64:"Gd",65:"Tb",66:"Dy",
+67:"Ho",68:"Er",69:"Tm",70:"Yb",71:"Lu",72:"Hf",73:"Ta",74:"W",
+75:"Re",76:"Os",77:"Ir",78:"Pt",79:"Au",80:"Hg",81:"Tl",82:"Pb",
+83:"Bi",84:"Po",85:"At",86:"Rn",87:"Fr",88:"Ra",89:"Ac",90:"Th",
+91:"Pa",92:"U",93:"Np",94:"Pu",95:"Am",96:"Cm",97:"Bk",98:"Cf",
+99:"Es",100:"Fm",101:"Md",102:"No",103:"Lr",104:"Rf",105:"Db",
+106:"Sg",107:"Bh",108:"Hs",109:"Mt",110:"Ds",111:"Rg",112:"Cn",
+113:"Nh",114:"Fl",115:"Mc",116:"Lv",117:"Ts",118:"Og"
+};
+return s[z]||"";
+}
+
+/* Search */
+function filter(){
+let v=document.getElementById("search").value.toLowerCase();
+document.querySelectorAll(".el").forEach(e=>{
+e.style.display=e.innerText.toLowerCase().includes(v)?"":"none";
+});
+}
+</script>
+
+<footer>
+Done by Hasan Beida<br>
+Supervisor: Nadeen Azar
+</footer>
+
+</body>
+</html>
